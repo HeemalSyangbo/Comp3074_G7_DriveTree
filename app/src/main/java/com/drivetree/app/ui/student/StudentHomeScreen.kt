@@ -55,7 +55,7 @@ fun StudentHomeScreen(openProfile: (String) -> Unit, openAbout: () -> Unit) {
 private fun SearchTab(openProfile: (String) -> Unit) {
     var query by remember { mutableStateOf("") }
 
-    // Search by name OR address OR city OR languages
+    // Search by names OR address OR citys OR languages
     val filtered = remember(query) {
         val q = query.trim()
         Fixtures.instructors.filter { ins ->
@@ -71,6 +71,7 @@ private fun SearchTab(openProfile: (String) -> Unit) {
         }
     }
 
+    // SearchBar
     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
             value = query,
