@@ -1,0 +1,6 @@
+
+<resources>
+    <string name="app_name">DriveTree</string>
+    <string name="tagline">Book · Learn · Go</string>
+    <string name="app_version">v1.0</string> <!-- shown on About -->
+</resources>
