@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.drivetree.app.R
 import kotlinx.coroutines.delay
 
+//SplashScreen
 @Composable
 fun SplashScreen(onDone: () -> Unit) {
     // keep splash visible briefly, then navigate to Auth
