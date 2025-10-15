@@ -1,3 +1,8 @@
+// Verification Tab → for uploading instructor license & tracking approval status
+// Availability Tab → for setting teaching schedule
+// Bookings Tab → shows student requests for lessons
+// Profile Tab → allows instructor to update profile details
+
 package com.drivetree.app.ui.instructor
 
 import androidx.compose.foundation.layout.Column
