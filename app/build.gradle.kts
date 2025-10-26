@@ -61,6 +61,7 @@ dependencies {
 
     // Material Icons (needed for Icons.Filled / Icons.Default)
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.contentpager)
 
 
     testImplementation(libs.junit)
