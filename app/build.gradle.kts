@@ -62,6 +62,7 @@ dependencies {
 
     // Material Icons (needed for Icons.Filled / Icons.Default)
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.contentpager)
 
     // ===== Prototype 2: Data Access Layer (Room) =====
     implementation("androidx.room:room-runtime:2.6.1")
