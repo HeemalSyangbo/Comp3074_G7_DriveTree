@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("kapt") // <-- added for Room annotation processing
 }
 
 android {
@@ -53,15 +54,22 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    // ✅ New: Navigation for Compose
+    // Navigation for Compose
     implementation("androidx.navigation:navigation-compose:2.8.2")
 
-    // ✅ New: Coil (optional but useful for instructor photos/placeholders)
+    // Coil (optional for images)
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Material Icons (needed for Icons.Filled / Icons.Default)
     implementation("androidx.compose.material:material-icons-extended")
 
+    // ===== Prototype 2: Data Access Layer (Room) =====
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // ViewModel for Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -5,13 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.drivetree.app.data.AppDb
+import com.drivetree.app.data.AppViewModel
+import com.drivetree.app.data.DefaultRepository
 import com.drivetree.app.nav.Route
 import com.drivetree.app.ui.admin.AdminHomeScreen
 import com.drivetree.app.ui.auth.AuthScreen
-import com.drivetree.app.ui.auth.RegisterScreen     // ✅ import Register screen
+import com.drivetree.app.ui.auth.RegisterScreen
 import com.drivetree.app.ui.instructor.InstructorHomeScreen
 import com.drivetree.app.ui.misc.AboutScreen
 import com.drivetree.app.ui.misc.SplashScreen
@@ -24,6 +28,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Surface(color = MaterialTheme.colorScheme.background) {
+
+                // Repository + AppViewModel (seeds DB on first run)
+                val repo = DefaultRepository(AppDb.get(applicationContext))
+                val appVm: AppViewModel = viewModel(factory = AppViewModel.factory(repo))
+
                 val nav = rememberNavController()
 
                 NavHost(navController = nav, startDestination = Route.Splash.path) {
@@ -40,14 +49,13 @@ class MainActivity : ComponentActivity() {
 
                     composable(Route.Auth.path) {
                         AuthScreen(
-                            onStudent   = { nav.navigate(Route.StudentHome.path) },
-                            onInstructor= { nav.navigate(Route.InstructorHome.path) },
-                            onAdmin     = { nav.navigate(Route.AdminHome.path) },
-                            onRegister      = { nav.navigate(Route.Register.path) }   // ✅ go to Register
+                            onStudent    = { nav.navigate(Route.StudentHome.path) },
+                            onInstructor = { nav.navigate(Route.InstructorHome.path) },
+                            onAdmin      = { nav.navigate(Route.AdminHome.path) },
+                            onRegister   = { nav.navigate(Route.Register.path) }
                         )
                     }
 
-                    // ✅ Register route (UI-only sign up)
                     composable(Route.Register.path) {
                         RegisterScreen(
                             onStudent = {
@@ -60,35 +68,49 @@ class MainActivity : ComponentActivity() {
                                     popUpTo(Route.Auth.path) { inclusive = true }
                                 }
                             },
-                            onCancel = { nav.popBackStack() }
+                            onCancel = { nav.popBackStack() },
+                            appVm = appVm
                         )
                     }
 
                     composable(Route.StudentHome.path) {
                         StudentHomeScreen(
                             openProfile = { id -> nav.navigate(Route.InstructorProfile.withId(id)) },
-                            openAbout   = { nav.navigate(Route.About.path) }
+                            openAbout   = { nav.navigate(Route.About.path) },
+                            appVm       = appVm
                         )
                     }
 
                     composable(Route.InstructorHome.path) {
-                        InstructorHomeScreen(openAbout = { nav.navigate(Route.About.path) })
+                        InstructorHomeScreen(
+                            openAbout = { nav.navigate(Route.About.path) },
+                            appVm = appVm
+                        )
                     }
 
                     composable(Route.AdminHome.path) {
-                        AdminHomeScreen(openAbout = { nav.navigate(Route.About.path) })
+                        AdminHomeScreen(
+                            openAbout = { nav.navigate(Route.About.path) },
+                            appVm = appVm
+                        )
                     }
 
                     composable(Route.InstructorProfile.path) { backStack ->
                         val id = backStack.arguments?.getString("id") ?: ""
                         InstructorProfileScreen(
                             id = id,
-                            onBook = { nav.navigate(Route.BookingRequest.path) }
+                            appVm = appVm, // <-- pass ViewModel so screen reads from DB
+                            onBook = { nav.navigate(Route.BookingRequest.withId(id)) }
                         )
                     }
 
-                    composable(Route.BookingRequest.path) {
-                        BookingRequestScreen(onClose = { nav.popBackStack() })
+                    composable(Route.BookingRequest.path) { backStack ->
+                        val id = backStack.arguments?.getString("id") ?: ""
+                        BookingRequestScreen(
+                            instructorId = id,
+                            appVm   = appVm,
+                            onClose = { nav.popBackStack() }
+                        )
                     }
 
                     composable(Route.About.path) {

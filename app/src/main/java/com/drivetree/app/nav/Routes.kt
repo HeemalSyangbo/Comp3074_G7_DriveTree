@@ -12,6 +12,11 @@ sealed class Route(val path: String) {
     data object InstructorProfile : Route("instructor/{id}") {
         fun withId(id: String) = "instructor/$id"
     }
-    data object BookingRequest : Route("booking/request")
+
+    // ✅ Updated to carry instructorId in navigation
+    data object BookingRequest : Route("booking/request/{id}") {
+        fun withId(id: String) = "booking/request/$id"
+    }
+
     data object About : Route("about")
 }

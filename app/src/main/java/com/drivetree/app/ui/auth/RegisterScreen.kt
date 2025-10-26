@@ -9,13 +9,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.drivetree.app.data.Role
+import com.drivetree.app.data.AppViewModel
+import com.drivetree.app.data.entity.ApplicationEntity
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onStudent: () -> Unit,
     onInstructor: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    appVm: AppViewModel   // <-- NEW: inject ViewModel so we can write to DB
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -35,7 +39,18 @@ fun RegisterScreen(
         if (error == null) {
             when (role) {
                 Role.STUDENT -> onStudent()
-                Role.INSTRUCTOR -> onInstructor()
+                Role.INSTRUCTOR -> {
+                    // NEW: create a pending instructor application for Admin review
+                    val app = ApplicationEntity(
+                        id = UUID.randomUUID().toString(),
+                        instructorName = name,
+                        email = email,
+                        submittedAt = System.currentTimeMillis(),
+                        status = "PENDING"
+                    )
+                    appVm.submitApplication(app)
+                    onInstructor()
+                }
                 Role.ADMIN -> { /* Admin sign-up not allowed */ }
             }
         }
@@ -59,10 +74,14 @@ fun RegisterScreen(
         ) {
             OutlinedTextField(name, { name = it }, label = { Text("Full name") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(email, { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(pass, { pass = it }, label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
-            OutlinedTextField(confirm, { confirm = it }, label = { Text("Confirm password") },
-                modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
+            OutlinedTextField(
+                pass, { pass = it }, label = { Text("Password") },
+                modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation()
+            )
+            OutlinedTextField(
+                confirm, { confirm = it }, label = { Text("Confirm password") },
+                modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation()
+            )
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(Role.STUDENT, Role.INSTRUCTOR).forEach { r ->
