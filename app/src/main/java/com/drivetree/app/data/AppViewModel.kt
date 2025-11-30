@@ -54,6 +54,20 @@ class AppViewModel(private val repo: Repository) : ViewModel() {
 
     fun cancelBooking(id: String) =
         viewModelScope.launch { repo.updateBookingStatus(id, "CANCELLED") }
+    
+    fun rescheduleBooking(bookingId: String, newEpochTime: Long) =
+        viewModelScope.launch { repo.rescheduleBooking(bookingId, newEpochTime) }
+    
+    fun updateInstructor(instructor: Instructor) =
+        viewModelScope.launch { repo.updateInstructor(instructor) }
+    
+    fun updateInstructorStatus(instructorId: String, status: String) =
+        viewModelScope.launch { repo.updateInstructorStatus(instructorId, status) }
+    
+    fun studentByEmail(email: String) = repo.studentByEmail(email)
+    
+    fun upsertStudent(student: com.drivetree.app.data.entity.StudentEntity) =
+        viewModelScope.launch { repo.upsertStudent(student) }
 
     companion object {
         fun factory(repo: Repository): ViewModelProvider.Factory =

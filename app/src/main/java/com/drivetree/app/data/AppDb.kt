@@ -8,13 +8,15 @@ import androidx.room.TypeConverters
 import com.drivetree.app.data.dao.ApplicationDao
 import com.drivetree.app.data.dao.BookingDao
 import com.drivetree.app.data.dao.InstructorDao
+import com.drivetree.app.data.dao.StudentDao
 import com.drivetree.app.data.entity.ApplicationEntity
 import com.drivetree.app.data.entity.BookingEntity
 import com.drivetree.app.data.entity.InstructorEntity
+import com.drivetree.app.data.entity.StudentEntity
 
 @Database(
-    entities = [InstructorEntity::class, BookingEntity::class, ApplicationEntity::class],
-    version = 1,
+    entities = [InstructorEntity::class, BookingEntity::class, ApplicationEntity::class, StudentEntity::class],
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -22,6 +24,7 @@ abstract class AppDb : RoomDatabase() {
     abstract fun instructors(): InstructorDao
     abstract fun bookings(): BookingDao
     abstract fun applications(): ApplicationDao
+    abstract fun students(): StudentDao
 
     companion object {
         @Volatile private var INSTANCE: AppDb? = null

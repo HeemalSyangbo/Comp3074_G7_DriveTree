@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.drivetree.app.data.AppViewModel
 
@@ -36,27 +37,100 @@ fun InstructorProfileScreen(
         Column(
             Modifier
                 .padding(pad)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(instructor.address, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("${instructor.city} • $${instructor.pricePerHour}/hr • ★${"%.1f".format(instructor.rating)}")
-            Text("Car Type: ${instructor.carType}")
-            Text("Languages: ${instructor.languages.joinToString(", ")}")
-
-            if (instructor.verified) {
-                AssistChip(onClick = {}, label = { Text("Verified") })
+            // Header card with name and rating
+            ElevatedCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            instructor.name,
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        if (instructor.verified) {
+                            AssistChip(
+                                onClick = {},
+                                label = { Text("Verified ✓") }
+                            )
+                        }
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                "★ ${"%.1f".format(instructor.rating)}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                "${(instructor.rating * 10).toInt()} reviews",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Text(
+                            "$${instructor.pricePerHour}/hr",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
             }
 
-            Spacer(Modifier.height(12.dp))
+            // Details card
+            ElevatedCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Details", style = MaterialTheme.typography.titleMedium)
+                    
+                    // Experience (simulated based on rating)
+                    val experienceYears = if (instructor.rating >= 4.5) "5+ years" else if (instructor.rating >= 4.0) "3+ years" else "1+ years"
+                    ProfileInfoRow("Experience", "$experienceYears, ex-MTO examiner")
+                    ProfileInfoRow("Location", "${instructor.address}, ${instructor.city}")
+                    ProfileInfoRow("Areas Covered", instructor.city)
+                    ProfileInfoRow("Car Type", instructor.carType)
+                    ProfileInfoRow("Transmission", if (instructor.carType.lowercase().contains("automatic")) "Automatic" else "Manual")
+                    ProfileInfoRow("Languages", instructor.languages.joinToString(", "))
+                }
+            }
 
+            Spacer(Modifier.weight(1f))
+
+            // Book button
             Button(
                 onClick = onBook,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text("Book a Lesson")
+                Text("Book a Lesson", style = MaterialTheme.typography.titleMedium)
             }
         }
+    }
+}
+
+@Composable
+private fun ProfileInfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            label,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.End
+        )
     }
 }
 

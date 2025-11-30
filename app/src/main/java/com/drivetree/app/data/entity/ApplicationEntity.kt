@@ -9,5 +9,10 @@ data class ApplicationEntity(
     val instructorName: String,
     val email: String,
     val submittedAt: Long,
-    val status: String
+    val status: String,
+    val address: String? = null,
+    val city: String? = null,
+    val pricePerHour: Int? = null,
+    val carType: String? = null,
+    val languages: String? = null  // Comma-separated string
 )
