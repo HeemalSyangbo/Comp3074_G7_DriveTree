@@ -42,18 +42,28 @@ class DefaultRepository(private val db: AppDb) : Repository {
         // 1) Mark application as APPROVED
         db.applications().upsert(app.copy(status = "APPROVED"))
 
-        // 2) Create/Upsert a corresponding Instructor so students can find them
+        // 2) Create/Upsert a corresponding Instructor using profile info from application
+        val langList = if (app.languages != null && app.languages.isNotBlank()) {
+            app.languages.split(",").map { it.trim() }.filter { it.isNotBlank() }
+        } else {
+            listOf("English")
+        }
+        
         val newInstructor = InstructorEntity(
             id = app.id,                          // reuse application id
             name = app.instructorName,
-            address = "To be updated",
-            pricePerHour = 45,
+            address = app.address ?: "To be updated",
+            pricePerHour = app.pricePerHour ?: 45,
             rating = 0.0,
-            city = "Toronto",
-            languages = listOf("English"),
+            city = app.city ?: "Toronto",
+            languages = langList,
             verified = true,                      // Approved by Admin
-            carType = "Sedan (Automatic)",
-            photoUrl = null
+            carType = app.carType ?: "Sedan (Automatic)",
+            photoUrl = null,
+            status = "ACTIVE",
+            availabilityDays = null,
+            availabilityStartTime = null,
+            availabilityEndTime = null
         )
         db.instructors().upsertAll(listOf(newInstructor))
     }
@@ -71,9 +81,30 @@ class DefaultRepository(private val db: AppDb) : Repository {
         val normalized = status.trim().uppercase()
 
         // (Optional) keep a known set for readability; still allow others if you add later
-        val allowed = setOf("REQUESTED", "APPROVED", "REJECTED", "CANCELLED")
+        val allowed = setOf("REQUESTED", "APPROVED", "REJECTED", "CANCELLED", "COMPLETED")
         val finalStatus = if (normalized in allowed) normalized else normalized
 
         db.bookings().upsert(current.copy(status = finalStatus))
+    }
+    
+    override suspend fun rescheduleBooking(bookingId: String, newEpochTime: Long) {
+        val current = bookings.first().find { it.id == bookingId } ?: return
+        db.bookings().upsert(current.copy(epochTime = newEpochTime, status = "REQUESTED"))
+    }
+    
+    override suspend fun updateInstructor(instructor: Instructor) {
+        db.instructors().upsertAll(listOf(instructor.toEntity()))
+    }
+    
+    override suspend fun updateInstructorStatus(instructorId: String, status: String) {
+        val current = instructors.first().find { it.id == instructorId } ?: return
+        val updated = current.copy(status = status.uppercase())
+        db.instructors().upsertAll(listOf(updated.toEntity()))
+    }
+    
+    override fun studentByEmail(email: String): Flow<StudentEntity?> = db.students().byEmail(email)
+    
+    override suspend fun upsertStudent(student: StudentEntity) {
+        db.students().upsert(student)
     }
 }

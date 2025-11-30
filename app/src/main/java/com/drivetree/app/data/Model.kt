@@ -10,7 +10,11 @@ data class Instructor(
     val languages: List<String>,
     val verified: Boolean,
     val carType: String,
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+    val status: String = "ACTIVE",  // ACTIVE, SUSPENDED, BANNED
+    val availabilityDays: String? = null,  // Comma-separated days
+    val availabilityStartTime: String? = null,
+    val availabilityEndTime: String? = null
 )
 
 enum class Role { STUDENT, INSTRUCTOR, ADMIN }

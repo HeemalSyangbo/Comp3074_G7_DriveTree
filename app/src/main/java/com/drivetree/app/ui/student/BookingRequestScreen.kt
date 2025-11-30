@@ -2,12 +2,13 @@ package com.drivetree.app.ui.student
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.drivetree.app.data.AppViewModel
+import com.drivetree.app.data.UserSession
 import com.drivetree.app.data.entity.BookingEntity
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -21,10 +22,24 @@ import java.util.UUID
 fun BookingRequestScreen(
     instructorId: String,
     appVm: AppViewModel,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onBookingSuccess: () -> Unit = onClose
 ) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    // Pre-fill from user session
+    val sessionName = UserSession.currentUserName ?: ""
+    val sessionEmail = UserSession.currentUserEmail ?: ""
+    
+    var name by remember { mutableStateOf(sessionName) }
+    var email by remember { mutableStateOf(sessionEmail) }
+    var pickupLocation by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    
+    // Update when session changes
+    LaunchedEffect(sessionName, sessionEmail) {
+        if (name.isBlank()) name = sessionName
+        if (email.isBlank()) email = sessionEmail
+    }
 
     // --- Date & time picking state ---
     var showDatePicker by remember { mutableStateOf(false) }
@@ -65,7 +80,7 @@ fun BookingRequestScreen(
                 title = { Text("Request Lesson") },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 }
             )
@@ -97,30 +112,45 @@ fun BookingRequestScreen(
                     Button(onClick = { showTimePicker = true }) { Text("Pick time") }
                 }
             }
+            
+            // Pickup Location
+            OutlinedTextField(
+                value = pickupLocation,
+                onValueChange = { pickupLocation = it },
+                label = { Text("Pickup Location") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Enter pickup address") }
+            )
+            
+            // Note (optional)
+            OutlinedTextField(
+                value = note,
+                onValueChange = { note = it },
+                label = { Text("Note (optional)") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Any special instructions or requests") },
+                maxLines = 3
+            )
 
             Button(
                 onClick = {
                     val booking = BookingEntity(
                         id = UUID.randomUUID().toString(),
                         instructorId = instructorId,
-                        studentName = name.ifBlank { "Student (Demo)" },
-                        studentEmail = email,
+                        studentName = name.ifBlank { sessionName.ifBlank { "Student" } },
+                        studentEmail = email.ifBlank { sessionEmail },
                         epochTime = combinedEpochMillis(),   // <-- use picked date+time
-                        status = "REQUESTED"
+                        status = "REQUESTED",
+                        pickupLocation = pickupLocation.ifBlank { null },
+                        note = note.ifBlank { null }
                     )
                     appVm.requestBooking(booking)
-
-                    scope.launch {
-                        snackbarHost.showSnackbar("Booking sent to instructor")
-                        name = ""
-                        email = ""
-                        onClose()
-                    }
+                    showSuccessDialog = true
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = email.contains("@")
+                enabled = email.contains("@") && name.isNotBlank() && pickupLocation.isNotBlank()
             ) {
-                Text("Submit Request")
+                Text("Submit Booking")
             }
         }
     }
@@ -153,6 +183,30 @@ fun BookingRequestScreen(
             },
             dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text("Cancel") } },
             text = { TimePicker(state = timeState) }
+        )
+    }
+    
+    // ---------- Success Dialog ----------
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showSuccessDialog = false
+                onBookingSuccess()
+            },
+            title = { Text("Booking Successful!") },
+            text = { 
+                val instructorName = appVm.instructors.collectAsState(initial = emptyList()).value
+                    .firstOrNull { it.id == instructorId }?.name ?: "the instructor"
+                Text("Booking request sent to $instructorName") 
+            },
+            confirmButton = {
+                Button(onClick = { 
+                    showSuccessDialog = false
+                    onBookingSuccess()
+                }) {
+                    Text("OK")
+                }
+            }
         )
     }
 }

@@ -52,7 +52,8 @@ class MainActivity : ComponentActivity() {
                             onStudent    = { nav.navigate(Route.StudentHome.path) },
                             onInstructor = { nav.navigate(Route.InstructorHome.path) },
                             onAdmin      = { nav.navigate(Route.AdminHome.path) },
-                            onRegister   = { nav.navigate(Route.Register.path) }
+                            onRegister   = { nav.navigate(Route.Register.path) },
+                            appVm        = appVm
                         )
                     }
 
@@ -77,6 +78,12 @@ class MainActivity : ComponentActivity() {
                         StudentHomeScreen(
                             openProfile = { id -> nav.navigate(Route.InstructorProfile.withId(id)) },
                             openAbout   = { nav.navigate(Route.About.path) },
+                            onLogout    = {
+                                com.drivetree.app.data.UserSession.clear()
+                                nav.navigate(Route.Auth.path) {
+                                    popUpTo(Route.StudentHome.path) { inclusive = true }
+                                }
+                            },
                             appVm       = appVm
                         )
                     }
@@ -84,6 +91,12 @@ class MainActivity : ComponentActivity() {
                     composable(Route.InstructorHome.path) {
                         InstructorHomeScreen(
                             openAbout = { nav.navigate(Route.About.path) },
+                            onLogout = {
+                                com.drivetree.app.data.UserSession.clear()
+                                nav.navigate(Route.Auth.path) {
+                                    popUpTo(Route.InstructorHome.path) { inclusive = true }
+                                }
+                            },
                             appVm = appVm
                         )
                     }
@@ -91,6 +104,12 @@ class MainActivity : ComponentActivity() {
                     composable(Route.AdminHome.path) {
                         AdminHomeScreen(
                             openAbout = { nav.navigate(Route.About.path) },
+                            onLogout = {
+                                com.drivetree.app.data.UserSession.clear()
+                                nav.navigate(Route.Auth.path) {
+                                    popUpTo(Route.AdminHome.path) { inclusive = true }
+                                }
+                            },
                             appVm = appVm
                         )
                     }
@@ -109,7 +128,14 @@ class MainActivity : ComponentActivity() {
                         BookingRequestScreen(
                             instructorId = id,
                             appVm   = appVm,
-                            onClose = { nav.popBackStack() }
+                            onClose = { nav.popBackStack() },
+                            onBookingSuccess = {
+                                // Set flag to show bookings tab, then navigate
+                                com.drivetree.app.data.UserSession.shouldShowBookingsTab = true
+                                nav.navigate(Route.StudentHome.path) {
+                                    popUpTo(Route.StudentHome.path) { inclusive = true }
+                                }
+                            }
                         )
                     }
 

@@ -10,5 +10,7 @@ data class BookingEntity(
     val studentName: String,
     val studentEmail: String,
     val epochTime: Long,         // slot time
-    val status: String           // REQUESTED / CONFIRMED / CANCELLED / DECLINED
+    val status: String,           // REQUESTED / APPROVED / REJECTED / CANCELLED / COMPLETED
+    val pickupLocation: String? = null,  // Pickup location for the lesson
+    val note: String? = null             // Optional note from student
 )
