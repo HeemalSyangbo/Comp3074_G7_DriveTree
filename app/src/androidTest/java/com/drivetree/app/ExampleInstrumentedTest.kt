@@ -17,7 +17,7 @@ import org.junit.Assert.*
 class ExampleInstrumentedTest {
     @Test
     fun useAppContext() {
-        // Context of the app under test.
+        // Context of the app under text
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.drivetree.app", appContext.packageName)
     }
