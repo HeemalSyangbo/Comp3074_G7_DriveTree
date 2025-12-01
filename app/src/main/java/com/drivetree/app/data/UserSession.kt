@@ -1,5 +1,4 @@
 package com.drivetree.app.data
-
 object UserSession {
     var currentUserName: String? = null
     var currentUserEmail: String? = null
