@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // Register Signup Only
+                    // ✅ Register route (UI-only sign up)
                     composable(Route.Register.path) {
                         RegisterScreen(
                             onStudent = {
